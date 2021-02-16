@@ -1,129 +1,208 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+# Game Ping-Pong
 
-# C extensions
-*.so
+# Imports
+from tkinter import *
+import random
+import time
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+# Variável recebendo o valor digitado pelo usuário
+level = int(input("Qual nível você gostaria de jogar? 1/2/3/4/5 \n"))
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+# Variável
+length = 500/level
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+# Instância do Objeto Tk
+root = Tk()
+root.title("Ping Pong")
+root.resizable(0,0)
+root.wm_attributes("-topmost", -1)
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
+# Variável recebendo o resultado da função Canvas
+canvas = Canvas(root, width=800, height=600, bd=0,highlightthickness=0)
+canvas.pack()
+root.update()
 
-# Translations
-*.mo
-*.pot
+# Variável
+count = 0
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
+# Variável
+lost = False
 
-# Flask stuff:
-instance/
-.webassets-cache
+# Classe
+class Bola:
+    def __init__(self, canvas, Barra, color):
 
-# Scrapy stuff:
-.scrapy
+        # Variáveis
+        self.canvas = canvas
+        self.Barra = Barra
+        self.id = canvas.create_oval(0, 0, 15, 15, fill=color)
+        self.canvas.move(self.id, 245, 200)
 
-# Sphinx documentation
-docs/_build/
+        # Lista
+        starts_x = [-3, -2, -1, 1, 2, 3]
+        random.shuffle(starts_x)
 
-# PyBuilder
-target/
+        # Variáveis
+        self.x = starts_x[0]
+        self.y = -3
+        self.canvas_height = self.canvas.winfo_height()
+        self.canvas_width = self.canvas.winfo_width()
 
-# Jupyter Notebook
-.ipynb_checkpoints
+    # Função
+    def draw(self):
 
-# IPython
-profile_default/
-ipython_config.py
+        # Variáveis
+        self.canvas.move(self.id, self.x, self.y)
+        pos = self.canvas.coords(self.id)
 
-# pyenv
-.python-version
+        # Condicional if
+        if pos[1] <= 0:
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
+            # Variável
+            self.y = 3
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
-__pypackages__/
+        # Condicional if
+        if pos[3] >= self.canvas_height:
 
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
+            # Variável
+            self.y = -3
 
-# SageMath parsed files
-*.sage.py
+        # Condicional if
+        if pos[0] <= 0:
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+            # Variável
+            self.x = 3
+            
+        # Condicional if
+        if pos[2] >= self.canvas_width:
 
-# Spyder project settings
-.spyderproject
-.spyproject
+            # Variável
+            self.x = -3
 
-# Rope project settings
-.ropeproject
+        # Variável
+        self.Barra_pos = self.canvas.coords(self.Barra.id)
 
-# mkdocs documentation
-/site
+        # Condicional if aninhado
+        if pos[2] >= self.Barra_pos[0] and pos[0] <= self.Barra_pos[2]:
+            if pos[3] >= self.Barra_pos[1] and pos[3] <= self.Barra_pos[3]:
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+                # Variáveis
+                self.y = -3
+                global count
+                count +=1
 
-# Pyre type checker
-.pyre/
+                # Chamada à função
+                score()
+
+        # Condicional if 
+        if pos[3] <= self.canvas_height:
+
+            # Variável
+            self.canvas.after(10, self.draw)
+        else:
+
+            # Chamada à função
+            game_over()
+
+            # Variáveis
+            global lost
+            lost = True
+
+# Classe
+class Barra:
+    def __init__(self, canvas, color):
+
+        # Variáveis
+        self.canvas = canvas
+        self.id = canvas.create_rectangle(0, 0, length, 10, fill=color)
+        self.canvas.move(self.id, 200, 400)
+        self.x = 0
+        self.canvas_width = self.canvas.winfo_width()
+        self.canvas.bind_all("<KeyPress-Left>", self.move_left)
+        self.canvas.bind_all("<KeyPress-Right>", self.move_right)
+
+    # Função
+    def draw(self):
+
+        # Chamada ao método
+        self.canvas.move(self.id, self.x, 0)
+
+        # Variável
+        self.pos = self.canvas.coords(self.id)
+
+        # Condicional if 
+        if self.pos[0] <= 0:
+
+            # Variável
+            self.x = 0
+        
+        # Condicional if 
+        if self.pos[2] >= self.canvas_width:
+
+            # Variável
+            self.x = 0
+        
+        global lost
+        
+        # Condicional if 
+        if lost == False:
+            self.canvas.after(10, self.draw)
+
+    # Função
+    def move_left(self, event):
+
+        # Condicional if 
+        if self.pos[0] >= 0:
+
+            # Variável
+            self.x = -3
+
+    # Função
+    def move_right(self, event):
+
+        # Condicional if 
+        if self.pos[2] <= self.canvas_width:
+
+            # Variável
+            self.x = 3
+
+# Função
+def start_game(event):
+
+    # Variáveis
+    global lost, count
+    lost = False
+    count = 0
+
+    # Chamada à função
+    score()
+
+    # Variável que recebe o resultado da função
+    canvas.itemconfig(game, text=" ")
+
+    # Métodos dos objetos
+    time.sleep(1)
+    Barra.draw()
+    Bola.draw()
+
+# Função
+def score():
+    canvas.itemconfig(score_now, text="Pontos: " + str(count))
+
+# Função
+def game_over():
+    canvas.itemconfig(game, text="Game over!")
+
+# Instâncias dos objetos Barra e Bola
+Barra = Barra(canvas, "orange")
+Bola = Bola(canvas, Barra, "purple")
+
+# Variáveis que recebem o resultado das funções
+score_now = canvas.create_text(430, 20, text="Pontos: " + str(count), fill = "green", font=("Arial", 16))
+game = canvas.create_text(400, 300, text=" ", fill="red", font=("Arial", 40))
+canvas.bind_all("<Button-1>", start_game)
+
+# Executa o programa
+root.mainloop()
+
+#Fim#
